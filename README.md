@@ -52,6 +52,15 @@ Worker 이름은 `web-audio-api`, 커스텀 도메인은 `audio.vialinks.xyz`.
 `wrangler.jsonc` 는 Worker 스크립트 없이 `dist/` 를 정적 Assets 로만 서빙한다
 (`html_handling: auto-trailing-slash`, `not_found_handling: 404-page`).
 
+### Workers Builds(Git 연동)
+
+- `.node-version` 으로 Node 22.23.2 고정 (빌드 이미지에 미리 설치되어 있는 버전).
+- Workers Builds 는 wrangler 설정의 `[build]` 커스텀 빌드를 **무시**하므로, 대시보드의
+  빌드 명령이 비어 있으면 `dist/` 없이 배포가 실행되어 실패한다. 이를 막기 위해
+  `postinstall` 에서 `astro build` 를 돌려 의존성 설치만으로도 `dist/` 가 만들어지게 했다.
+- 대시보드 권장 설정 — **Build command** `npm run build`, **Deploy command** `npx wrangler deploy`.
+  (빌드 명령이 확실히 설정되어 있다면 `postinstall` 은 빼도 된다.)
+
 ## 구조
 
 ```
