@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "web-audio-api",
+  "compatibility_date": "2025-08-01",
+
+  // Worker 스크립트 없이 정적 Assets 만 서빙한다(순수 Assets 바인딩).
+  "assets": {
+    "directory": "./dist",
+    // /spatial → /spatial/ 로 정규화하여 Astro 의 directory 빌드와 맞춘다.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

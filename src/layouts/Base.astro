@@ -1,0 +1,76 @@
+---
+import Nav from '../components/Nav.astro';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import '../styles/via.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** 현재 경로 (네비게이션 활성 표시) */
+  active?: string;
+  /** true 면 스크롤 없는 전체 화면 레이아웃(공간 음향 실험실) */
+  fullscreen?: boolean;
+  /** 푸터 표시 여부 */
+  footer?: boolean;
+}
+
+const {
+  title,
+  description = 'Web Audio API 로 만든 세 가지 오디오 실험 도구 — 공간 음향, 주파수 응답 측정, R2R 래더 DAC 시뮬레이터.',
+  active = '/',
+  fullscreen = false,
+  footer = true,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#ecf0f3" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+  </head>
+  <body class:list={[{ 'via-fullscreen': fullscreen }]}>
+    <Nav active={active} />
+    <main class:list={[{ 'via-main-fill': fullscreen }]}>
+      <slot />
+    </main>
+    {
+      footer && (
+        <footer class="via-foot">
+          <div class="container d-flex flex-wrap justify-content-between gap-2">
+            <span>VIA · WEB AUDIO API PLAYGROUND</span>
+            <span>audio.vialinks.xyz</span>
+          </div>
+        </footer>
+      )
+    }
+    <div class="via-toast-host" id="via-toast-host" aria-live="polite" aria-atomic="true"></div>
+  </body>
+</html>
+
+<style is:global>
+  body.via-fullscreen {
+    overflow: hidden;
+    height: 100vh;
+    height: 100dvh;
+  }
+  main.via-main-fill {
+    height: calc(100vh - var(--via-nav-h));
+    height: calc(100dvh - var(--via-nav-h));
+    position: relative;
+  }
+</style>

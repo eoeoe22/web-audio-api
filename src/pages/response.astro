@@ -1,0 +1,183 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="주파수 응답 측정 — Web Audio API"
+  description="테스트 톤과 사인 스윕을 재생하고 마이크로 되받아 실시간 RTA 와 20Hz~20kHz 주파수 응답 곡선을 그리는 측정 도구."
+  active="/response"
+>
+  <section class="container via-page-head">
+    <p class="via-hero__eyebrow">FREQUENCY RESPONSE · RTA · SINE SWEEP</p>
+    <h1>음향 주파수 응답 측정</h1>
+    <p>
+      Web Audio API 의 <b>OscillatorNode</b> 로 신호를 만들고 <b>AnalyserNode</b>(FFT 4096) 로 마이크 입력을
+      분석합니다. 스윕 구간의 대역별 최대 에너지를 기록해 응답 곡선을 그립니다.
+    </p>
+  </section>
+
+  <section class="container pb-5">
+    <div class="row g-4">
+      <!-- 1. 톤 제너레이터 -->
+      <div class="col-lg-6">
+        <div class="via-panel h-100">
+          <div class="via-sec-head">
+            <span class="via-sec-head__icon"><i class="bi bi-music-note-beamed"></i></span>
+            <div>
+              <h2>1. 톤 제너레이터</h2>
+              <p class="via-sec-head__sub">TEST TONE · 20Hz ~ 20kHz</p>
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+            <button id="btnTone" class="btn btn-fill">
+              <i class="bi bi-play-fill"></i> 재생 시작
+            </button>
+            <div class="via-field flex-grow-1">
+              <input type="number" id="inputFreq" value="1000" min="20" max="20000" class="w-100" />
+              <span class="via-field__unit">Hz</span>
+            </div>
+          </div>
+
+          <input type="range" class="form-range" id="sliderFreq" min="0" max="1000" />
+          <div class="d-flex justify-content-between mt-1">
+            <span class="via-readout__k">20 Hz</span>
+            <span class="via-readout__k">LOG SCALE</span>
+            <span class="via-readout__k">20 kHz</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 마이크 -->
+      <div class="col-lg-6">
+        <div class="via-panel h-100">
+          <div class="via-sec-head">
+            <span class="via-sec-head__icon"><i class="bi bi-mic"></i></span>
+            <div>
+              <h2>2. 마이크 입력 분석</h2>
+              <p class="via-sec-head__sub">GET USER MEDIA · RAW INPUT</p>
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+            <button id="btnMic" class="btn btn-primary">
+              <i class="bi bi-mic-fill"></i> 마이크 켜기
+            </button>
+            <span class="via-chip" id="micStatus"><i class="bi bi-circle"></i> 대기 중</span>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-baseline mb-2">
+            <span class="via-readout__k">INPUT LEVEL (RMS)</span>
+            <span class="via-readout__k" id="levelText">−∞ dB</span>
+          </div>
+          <div class="via-meter"><div class="via-meter__bar" id="levelMeter"></div></div>
+          <p class="via-readout__k mt-3 mb-0" style="line-height:1.7">
+            에코 제거 · 노이즈 억제 · 자동 게인은 모두 꺼진 상태로 캡처합니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- 3. RTA -->
+      <div class="col-12">
+        <div class="via-panel">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <div class="via-sec-head mb-0">
+              <span class="via-sec-head__icon"><i class="bi bi-bar-chart-steps"></i></span>
+              <div>
+                <h2>실시간 주파수 대역 (RTA)</h2>
+                <p class="via-sec-head__sub">REAL-TIME ANALYZER</p>
+              </div>
+            </div>
+            <div class="via-seg" role="group" aria-label="RTA 표시 모드">
+              <input type="radio" class="btn-check" name="rtaMode" value="graph" id="rta-graph" checked />
+              <label class="btn" for="rta-graph"><i class="bi bi-activity"></i> 그래프</label>
+              <input type="radio" class="btn-check" name="rtaMode" value="bars" id="rta-bars" />
+              <label class="btn" for="rta-bars"><i class="bi bi-bar-chart-fill"></i> 15밴드</label>
+            </div>
+          </div>
+          <div class="via-canvas-wrap">
+            <canvas id="rtaCanvas" height="280"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. 측정 -->
+      <div class="col-12">
+        <div class="via-panel">
+          <div class="via-sec-head">
+            <span class="via-sec-head__icon is-warm"><i class="bi bi-lightning-charge"></i></span>
+            <div>
+              <h2>3. 주파수 응답 측정 (Sine Sweep)</h2>
+              <p class="via-sec-head__sub">20Hz → 20kHz EXPONENTIAL SWEEP</p>
+            </div>
+          </div>
+          <p class="mb-4" style="font-size:.88rem;color:var(--via-muted);line-height:1.75">
+            20Hz 부터 20kHz 까지 스윕을 재생하며, 마이크로 들어오는 각 대역의 최대 에너지를 기록합니다.
+            측정 중에는 주변을 조용히 유지하세요.
+          </p>
+
+          <div class="d-flex flex-wrap align-items-center gap-3">
+            <button id="btnMeasure" class="btn btn-fill">
+              <i class="bi bi-record-circle"></i> <span id="btnMeasureLabel">측정 실행 (5초)</span>
+            </button>
+            <div class="via-field">
+              <span class="via-field__unit">스윕 길이</span>
+              <input type="number" id="inputDuration" value="5" min="1" max="60" style="width:52px" />
+              <span class="via-field__unit">초</span>
+            </div>
+            <span class="via-chip d-none" id="measureStatus">
+              <i class="bi bi-broadcast"></i> 측정 중… 조용히 해주세요
+            </span>
+          </div>
+
+          <div class="progress mt-3 d-none" id="measureProgressContainer">
+            <div class="progress-bar" id="measureProgressBar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. 결과 -->
+      <div class="col-12">
+        <div class="via-panel">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <div class="via-sec-head mb-0">
+              <span class="via-sec-head__icon is-warm"><i class="bi bi-graph-up"></i></span>
+              <div>
+                <h2>4. 측정 결과 (Frequency Response)</h2>
+                <p class="via-sec-head__sub">PEAK HOLD CURVE</p>
+              </div>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="chkSmooth" />
+              <label class="form-check-label" for="chkSmooth">스무딩 적용</label>
+            </div>
+          </div>
+          <div class="via-canvas-wrap">
+            <canvas id="resultCanvas" height="280"></canvas>
+          </div>
+          <p class="text-center via-readout__k mt-3 mb-0">
+            X: 주파수 (로그 20Hz ~ 20kHz) · Y: 상대적 음량 (dB)
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="via-dialog" id="warnDialog">
+    <div class="via-dialog__body">
+      <div class="via-dialog__icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <h2>측정 정확도에 대한 주의</h2>
+      <p>
+        이 측정 도구의 신뢰구간은 알 수 없으며, 20Hz~20,000Hz 전 구간은 비신뢰구간입니다.
+        CPU 부하로 브라우저에 렉이 발생하면 주파수 응답이 틀어질 수 있습니다. 단순 참고용으로 사용하세요.
+      </p>
+      <div class="d-flex justify-content-end">
+        <button class="btn btn-fill" id="warnOk">확인했습니다</button>
+      </div>
+    </div>
+  </dialog>
+</Base>
+
+<script>
+  import '../scripts/response';
+</script>

@@ -1,0 +1,161 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="R2R 래더 DAC 시뮬레이터 — Web Audio API"
+  description="4·8·16비트 R2R 저항 사다리를 켜고 끄며 디지털 값이 아날로그 파형이 되는 과정과 양자화 계단 현상을 관찰합니다."
+  active="/r2r"
+>
+  <section class="container via-page-head">
+    <p class="via-hero__eyebrow">R2R LADDER · DIGITAL TO ANALOG</p>
+    <h1 id="mode-title">4비트 R2R 래더 DAC 시뮬레이터</h1>
+    <p>
+      비트 수가 늘어날수록 디지털 값이 얼마나 촘촘한 아날로그 값이 되는지 확인해 보세요.
+      비트를 직접 켜고 끄거나, 사인파를 재생해 오실로스코프에서 계단 현상을 관찰할 수 있습니다.
+    </p>
+  </section>
+
+  <section class="container pb-5">
+    <!-- 비트 모드 -->
+    <div class="d-flex justify-content-center mb-4">
+      <div class="via-seg" role="group" aria-label="비트 수 선택">
+        <input type="radio" class="btn-check" name="bitmode" id="btn-4bit" value="4" checked />
+        <label class="btn" for="btn-4bit">4비트 (0~15)</label>
+        <input type="radio" class="btn-check" name="bitmode" id="btn-8bit" value="8" />
+        <label class="btn" for="btn-8bit">8비트 (0~255)</label>
+        <input type="radio" class="btn-check" name="bitmode" id="btn-16bit" value="16" />
+        <label class="btn" for="btn-16bit">16비트 (0~65535)</label>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- 1. 저항기 -->
+      <div class="col-12">
+        <div class="via-panel">
+          <div class="via-sec-head">
+            <span class="via-sec-head__icon"><i class="bi bi-motherboard"></i></span>
+            <div>
+              <h2 id="card-header-text">4개의 켜고 끌 수 있는 저항기</h2>
+              <p class="via-sec-head__sub">RESISTOR LADDER · MSB → LSB</p>
+            </div>
+          </div>
+          <div id="resistor-container" class="d-flex flex-wrap gap-2 justify-content-center"></div>
+          <p class="text-center via-readout__k mt-4 mb-0">
+            <i class="bi bi-info-circle"></i> 상자를 클릭하면 개별 저항기를 직접 켜거나 끌 수 있습니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- 2. 오실로스코프 -->
+      <div class="col-12">
+        <details class="via-accordion" open>
+          <summary>
+            <i class="bi bi-activity text-primary"></i> 오실로스코프 그래프 (계단 현상 확인하기)
+          </summary>
+          <div class="via-accordion__body">
+            <div class="via-canvas-wrap" style="--via-canvas-h:250px">
+              <canvas id="oscilloscope" height="250"></canvas>
+            </div>
+
+            <div class="row align-items-center g-3 mt-1">
+              <div class="col-md-8 offset-md-2">
+                <div class="d-flex align-items-center gap-3">
+                  <label for="osc-speed-input" class="form-label mb-0 text-nowrap">
+                    <i class="bi bi-speedometer2"></i> 스크롤 속도
+                  </label>
+                  <input
+                    type="range"
+                    class="form-range"
+                    id="osc-speed-input"
+                    min="1.0"
+                    max="1.5"
+                    step="0.1"
+                    value="1.0"
+                  />
+                  <span id="osc-speed-label" class="badge" style="min-width:64px">1.0 x</span>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-center via-readout__k mt-3 mb-0">
+              <i class="bi bi-exclamation-triangle-fill text-warm"></i>
+              4비트 모드에서 사인파를 켜면 투박한 <b>계단 현상(Quantization Error)</b>이 뚜렷하게 보입니다.
+            </p>
+          </div>
+        </details>
+      </div>
+
+      <!-- 3. 숫자 / 슬라이더 -->
+      <div class="col-12">
+        <div class="via-panel">
+          <div class="row align-items-end g-4">
+            <div class="col-md-3">
+              <label id="num-label" for="num-input" class="form-label">출력 값 (0 ~ 15)</label>
+              <input
+                type="number"
+                id="num-input"
+                class="form-control text-center font-mono"
+                style="font-size:1.35rem;color:var(--via-primary)"
+                min="0"
+                max="15"
+                value="0"
+              />
+            </div>
+            <div class="col-md-9">
+              <label for="slider-input" class="form-label">
+                <i class="bi bi-sliders2"></i> 아날로그 크기 조절
+              </label>
+              <input type="range" class="form-range" id="slider-input" min="0" max="15" value="0" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. 사인파 -->
+      <div class="col-12">
+        <div class="via-panel text-center">
+          <div class="via-sec-head justify-content-center">
+            <span class="via-sec-head__icon"><i class="bi bi-play-circle"></i></span>
+            <div class="text-start">
+              <h2>자동 재생 컨트롤</h2>
+              <p class="via-sec-head__sub">SINE WAVE GENERATOR</p>
+            </div>
+          </div>
+
+          <button id="sine-btn" class="btn btn-fill btn-lg rounded-pill mb-4">
+            <i class="bi bi-activity"></i> 사인파 보기
+          </button>
+
+          <div class="row">
+            <div class="col-md-8 offset-md-2">
+              <div class="d-flex align-items-center gap-3">
+                <label for="speed-input" class="form-label mb-0 text-nowrap">
+                  <i class="bi bi-lightning-charge"></i> 사인파 속도
+                </label>
+                <input
+                  type="range"
+                  class="form-range"
+                  id="speed-input"
+                  min="0.1"
+                  max="10.0"
+                  step="0.1"
+                  value="1.0"
+                />
+                <span id="speed-label" class="badge is-primary" style="min-width:64px">1.0 x</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="via-readout__k mt-3 mb-0">
+            <i class="bi bi-info-circle"></i> 파형이 오르내리는 속도를 10배속까지 조절할 수 있습니다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import '../scripts/r2r';
+</script>
