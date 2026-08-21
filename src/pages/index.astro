@@ -1,0 +1,94 @@
+---
+import Base from '../layouts/Base.astro';
+
+const cards = [
+  {
+    href: '/spatial/',
+    icon: 'bi-badge-3d',
+    warm: false,
+    title: '공간 음향 실험실',
+    desc: '음원과 청취자를 3D 공간에서 직접 끌어다 놓고, HRTF 패닝으로 방향·거리감이 어떻게 만들어지는지 귀로 확인합니다.',
+    tags: ['PannerNode', 'HRTF', 'three.js'],
+  },
+  {
+    href: '/response/',
+    icon: 'bi-graph-up',
+    warm: true,
+    title: '주파수 응답 측정',
+    desc: '테스트 톤과 사인 스윕을 재생하고 마이크로 되받아, 실시간 RTA 스펙트럼과 20Hz~20kHz 응답 곡선을 그립니다.',
+    tags: ['AnalyserNode', 'getUserMedia', 'FFT 4096'],
+  },
+  {
+    href: '/r2r/',
+    icon: 'bi-motherboard',
+    warm: false,
+    title: 'R2R 래더 DAC',
+    desc: '4·8·16비트 저항 사다리를 켜고 끄며, 디지털 값이 아날로그 파형이 되는 과정과 양자화 계단 현상을 관찰합니다.',
+    tags: ['DAC', 'Quantization', 'Canvas'],
+  },
+];
+---
+
+<Base title="Web Audio API 기능" active="/">
+  <section class="container via-hero">
+    <div class="row align-items-end g-4">
+      <div class="col-lg-7">
+        <p class="via-hero__eyebrow">WEB AUDIO API · SIGNAL PLAYGROUND</p>
+        <h1>Web Audio API 기능</h1>
+        <p class="lead mt-3">
+          브라우저 안에서 소리를 만들고, 공간에 배치하고, 되받아 측정하는 세 가지 실험.
+          모두 서버 없이 클라이언트에서만 동작합니다.
+        </p>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          <span class="via-chip"><i class="bi bi-cpu"></i> 100% CLIENT-SIDE</span>
+          <span class="via-chip"><i class="bi bi-headphones"></i> HEADPHONES RECOMMENDED</span>
+          <span class="via-chip"><i class="bi bi-shield-check"></i> NO UPLOAD</span>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="via-panel">
+          <div class="via-sec-head mb-3">
+            <span class="via-sec-head__icon"><i class="bi bi-lightbulb"></i></span>
+            <div>
+              <h2>시작하기 전에</h2>
+              <p class="via-sec-head__sub">BEFORE YOU BEGIN</p>
+            </div>
+          </div>
+          <ul class="mb-0 ps-3" style="font-size:.88rem;line-height:1.85;color:var(--via-muted)">
+            <li>브라우저 정책상 <b>첫 클릭</b> 이후에 소리가 재생됩니다.</li>
+            <li>입체음향(HRTF)은 <b>헤드폰</b>에서만 제대로 들립니다.</li>
+            <li>측정 도구는 <b>마이크 권한</b>이 필요하며, 소리는 기기 밖으로 나가지 않습니다.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container pb-5">
+    <div class="row g-4">
+      {
+        cards.map((c) => (
+          <div class="col-md-6 col-lg-4">
+            <a class="via-card-link" href={c.href}>
+              <span class:list={['via-card-link__icon', { 'is-warm': c.warm }]}>
+                <i class={`bi ${c.icon}`} />
+              </span>
+              <h2>{c.title}</h2>
+              <p>{c.desc}</p>
+              <div class="via-card-link__foot">
+                <span class="d-flex flex-wrap gap-1">
+                  {c.tags.map((t) => (
+                    <span class="via-chip">{t}</span>
+                  ))}
+                </span>
+                <span class="via-card-link__go">
+                  열기 <i class="bi bi-arrow-right" />
+                </span>
+              </div>
+            </a>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Base>

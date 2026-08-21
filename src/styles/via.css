@@ -1,0 +1,773 @@
+/* ============================================================================
+   VIA — Neumorphism skin for Bootstrap 5 (light only)
+   ----------------------------------------------------------------------------
+   컨셉: 페이지와 표면이 같은 부드러운 회청색(#ecf0f3) 위에 "돌출(extruded)"
+   이중 그림자(밝은 하이라이트 + 어두운 그림자)를 얹어, 카드·패널·버튼이 배경에서
+   부드럽게 솟아오른 듯 보이게 한다. 입력 필드·눌린 상태는 반대로 inset(오목).
+   블러 없는 불투명 표면 + 큰 둥근 모서리 + Montserrat.
+   다크 모드는 의도적으로 제공하지 않는다(라이트 전용 양식).
+   ========================================================================= */
+
+:root {
+  /* ── 팔레트(소프트 모노크롬 — 페이지와 카드가 같은 색) ── */
+  --via-bg: #ecf0f3;
+  --via-bg-alt: #e3e9ef;
+  --via-surface: #ecf0f3;
+  --via-text: #45494f;
+  --via-heading: #33373d;
+  --via-muted: #5f6671;
+  --via-border: #c9d2dc;
+  --via-hr: #d0d7df;
+
+  --via-primary: #3457cf;
+  --via-primary-hover: #2742b5;
+  --via-primary-rgb: 52, 87, 207;
+  --via-accent: #2f54cc;
+
+  /* 보조 액센트 — 계측/신호 표현용으로만 쓰는 최소 집합 */
+  --via-warm: #d1541c;        /* 면(도형·그래프) */
+  --via-warm-ink: #b3450f;    /* 텍스트 (#ecf0f3 위 AA) */
+  --via-ok: #1f7a52;
+  --via-amber-ink: #8a6100;
+  --via-danger: #b3261e;
+
+  /* ── 이중 그림자(뉴모피즘의 핵심) ── */
+  --via-shadow-sm: 3px 3px 6px #d1d9e6, -3px -3px 6px #f9fbff;
+  --via-shadow: 5px 5px 10px #ccd4e0, -5px -5px 10px #fafdff;
+  --via-shadow-md: 6px 6px 14px #d1d9e6, -6px -6px 14px #f9fbff;
+  --via-shadow-lg: 10px 10px 22px #ccd4e0, -10px -10px 22px #fafdff;
+  --via-inset-sm: inset 2px 2px 5px #d1d9e6, inset -2px -2px 5px #f9fbff;
+  --via-inset: inset 4px 4px 9px #ccd4e0, inset -4px -4px 9px #fafdff;
+  --via-inset-deep: inset 6px 6px 12px #c9d2de, inset -6px -6px 12px #fbfdff;
+
+  --via-radius-sm: 8px;
+  --via-radius: 12px;
+  --via-radius-lg: 18px;
+  --via-radius-xl: 24px;
+
+  --via-nav-h: 68px;
+  --via-ease: 0.18s ease;
+
+  --via-font: 'Montserrat', 'Noto Sans KR', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, sans-serif;
+  --via-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── Bootstrap 토큰 재정의 ── */
+  --bs-body-bg: var(--via-bg);
+  --bs-body-color: var(--via-text);
+  --bs-body-font-family: var(--via-font);
+  --bs-font-sans-serif: var(--via-font);
+  --bs-font-monospace: var(--via-mono);
+  --bs-emphasis-color: var(--via-heading);
+  --bs-secondary-color: var(--via-muted);
+  --bs-border-color: var(--via-border);
+  --bs-primary: var(--via-primary);
+  --bs-primary-rgb: var(--via-primary-rgb);
+  --bs-link-color: var(--via-accent);
+  --bs-link-color-rgb: 47, 84, 204;
+  --bs-link-hover-color: var(--via-primary-hover);
+  --bs-border-radius: var(--via-radius);
+  --bs-border-radius-sm: var(--via-radius-sm);
+  --bs-border-radius-lg: var(--via-radius-lg);
+  --bs-border-radius-xl: var(--via-radius-xl);
+  --bs-heading-color: var(--via-heading);
+}
+
+/* ── 기본 ─────────────────────────────────────────────────────────────── */
+body {
+  background-color: var(--via-bg);
+  color: var(--via-text);
+  font-family: var(--via-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--via-heading);
+  letter-spacing: -0.015em;
+  font-weight: 700;
+}
+
+hr { border-color: var(--via-hr); opacity: 1; }
+.text-muted, .text-body-secondary { color: var(--via-muted) !important; }
+.text-primary { color: var(--via-primary) !important; }
+.text-warm { color: var(--via-warm-ink) !important; }
+.text-ok { color: var(--via-ok) !important; }
+.font-mono { font-family: var(--via-mono); }
+
+a { text-decoration: none; }
+a:hover { text-decoration: none; }
+
+::selection { background: rgba(var(--via-primary-rgb), 0.18); }
+
+:focus-visible {
+  outline: 2px solid var(--via-primary);
+  outline-offset: 3px;
+}
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-range:focus-visible,
+.btn-check:focus-visible + .btn {
+  outline: 2px solid var(--via-primary);
+  outline-offset: 3px;
+  box-shadow: var(--via-shadow-sm);
+}
+
+/* ── 셸: 네비게이션 ─────────────────────────────────────────────────── */
+.via-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  height: var(--via-nav-h);
+  display: flex;
+  align-items: center;
+  background: var(--via-bg);
+  box-shadow: 0 6px 14px -8px #c6cfdb;
+}
+.via-nav__inner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.via-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--via-heading);
+  margin-right: auto;
+}
+.via-brand__mark {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--via-bg);
+  box-shadow: var(--via-shadow-sm);
+  color: var(--via-primary);
+  font-size: 1.05rem;
+}
+.via-brand span.via-brand__sub {
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--via-muted);
+  display: block;
+  margin-top: 1px;
+}
+.via-navlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--via-muted);
+  background: var(--via-bg);
+  box-shadow: var(--via-shadow-sm);
+  transition: color var(--via-ease), box-shadow var(--via-ease);
+  white-space: nowrap;
+}
+.via-navlink:hover { color: var(--via-heading); box-shadow: var(--via-shadow); }
+.via-navlink.is-active {
+  color: var(--via-primary);
+  box-shadow: var(--via-inset-sm);
+}
+
+/* ── 카드 / 패널 ─────────────────────────────────────────────────────── */
+.card {
+  --bs-card-bg: var(--via-surface);
+  --bs-card-border-width: 0;
+  --bs-card-border-radius: var(--via-radius-lg);
+  --bs-card-inner-border-radius: var(--via-radius-lg);
+  --bs-card-color: var(--via-text);
+  background: var(--via-surface);
+  border: 0;
+  border-radius: var(--via-radius-lg);
+  box-shadow: var(--via-shadow-md);
+}
+.card-header,
+.card-footer {
+  background: transparent;
+  border-color: var(--via-hr);
+  color: var(--via-heading);
+  font-weight: 700;
+}
+.via-panel {
+  background: var(--via-surface);
+  border-radius: var(--via-radius-lg);
+  box-shadow: var(--via-shadow-md);
+  padding: 1.5rem;
+}
+.via-sunken {
+  background: var(--via-surface);
+  border-radius: var(--via-radius);
+  box-shadow: var(--via-inset);
+  padding: 1rem;
+}
+
+/* 섹션 헤더(아이콘 배지 + 제목) */
+.via-sec-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1.1rem;
+}
+.via-sec-head__icon {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--via-bg);
+  box-shadow: var(--via-shadow-sm);
+  color: var(--via-primary);
+  font-size: 1.05rem;
+}
+.via-sec-head__icon.is-warm { color: var(--via-warm-ink); }
+.via-sec-head h2,
+.via-sec-head h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+}
+.via-sec-head__sub {
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  color: var(--via-muted);
+  font-family: var(--via-mono);
+  margin: 2px 0 0;
+}
+
+/* ── 버튼 ─────────────────────────────────────────────────────────────── */
+.btn {
+  --bs-btn-border-width: 0;
+  border: 0;
+  border-radius: var(--via-radius);
+  font-weight: 600;
+  padding: 0.62rem 1.15rem;
+  background: var(--via-bg);
+  color: var(--via-text);
+  box-shadow: var(--via-shadow-sm);
+  transition: box-shadow var(--via-ease), color var(--via-ease),
+    background-color var(--via-ease), transform var(--via-ease);
+}
+.btn:hover { color: var(--via-heading); box-shadow: var(--via-shadow); }
+.btn:active,
+.btn.active,
+.btn:not(.btn-check) + .btn:active {
+  box-shadow: var(--via-inset-sm) !important;
+  transform: translateY(0);
+}
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.5;
+  box-shadow: var(--via-inset-sm);
+  color: var(--via-muted);
+}
+
+.btn-primary,
+.btn-outline-primary {
+  --bs-btn-bg: var(--via-bg);
+  --bs-btn-color: var(--via-primary);
+  --bs-btn-hover-bg: var(--via-bg);
+  --bs-btn-hover-color: var(--via-primary-hover);
+  --bs-btn-active-bg: var(--via-bg);
+  --bs-btn-active-color: var(--via-primary-hover);
+  --bs-btn-disabled-bg: var(--via-bg);
+  --bs-btn-disabled-color: var(--via-muted);
+  background: var(--via-bg);
+  color: var(--via-primary);
+}
+.btn-primary:hover,
+.btn-outline-primary:hover { color: var(--via-primary-hover); }
+
+/* 강조(solid) 버튼 — 페이지당 1~2개만 */
+.btn-fill {
+  background: var(--via-primary);
+  color: #fff;
+  box-shadow: var(--via-shadow-sm);
+}
+.btn-fill:hover { background: var(--via-primary-hover); color: #fff; }
+.btn-fill:active { color: #fff; }
+.btn-fill:disabled, .btn-fill.disabled { background: var(--via-bg); color: var(--via-muted); }
+
+/* 정지/경고 상태 버튼 */
+.btn-stop { color: var(--via-danger); }
+.btn-stop:hover { color: var(--via-danger); }
+.btn-warm { color: var(--via-warm-ink); }
+.btn-warm:hover { color: var(--via-warm-ink); }
+
+.btn-lg { padding: 0.8rem 1.5rem; border-radius: var(--via-radius-lg); font-size: 1rem; }
+.btn-sm { padding: 0.4rem 0.8rem; border-radius: var(--via-radius-sm); font-size: 0.82rem; }
+.rounded-pill { border-radius: 999px !important; }
+
+/* 라디오 토글 그룹(.btn-check) */
+.btn-group { box-shadow: none; gap: 0.5rem; }
+.btn-group > .btn { border-radius: var(--via-radius) !important; }
+.btn-check:checked + .btn,
+.btn-check:active + .btn {
+  background: var(--via-bg);
+  color: var(--via-primary);
+  box-shadow: var(--via-inset-sm);
+}
+.via-seg {
+  display: inline-flex;
+  gap: 0.35rem;
+  padding: 0.3rem;
+  border-radius: 999px;
+  background: var(--via-bg);
+  box-shadow: var(--via-inset-sm);
+}
+.via-seg .btn { box-shadow: none; border-radius: 999px !important; font-size: 0.82rem; }
+.via-seg .btn-check:checked + .btn {
+  box-shadow: var(--via-shadow-sm);
+  color: var(--via-primary);
+}
+
+/* ── 폼 ───────────────────────────────────────────────────────────────── */
+.form-control,
+.form-select {
+  background: var(--via-bg);
+  border: 0;
+  border-radius: var(--via-radius);
+  box-shadow: var(--via-inset-sm);
+  color: var(--via-text);
+  padding: 0.62rem 0.9rem;
+  font-weight: 600;
+}
+.form-control:focus,
+.form-select:focus {
+  background: var(--via-bg);
+  color: var(--via-text);
+  box-shadow: var(--via-inset-sm);
+  outline: 2px solid var(--via-primary);
+  outline-offset: 2px;
+}
+.form-control::placeholder { color: var(--via-muted); font-weight: 500; }
+.form-control:disabled { opacity: 0.55; }
+.form-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--via-muted);
+  margin-bottom: 0.45rem;
+}
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] { -moz-appearance: textfield; appearance: textfield; }
+
+/* 인셋 입력 그룹(숫자 + 단위) */
+.via-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--via-bg);
+  border-radius: var(--via-radius);
+  box-shadow: var(--via-inset-sm);
+  padding: 0.4rem 0.85rem;
+}
+.via-field input {
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-family: var(--via-mono);
+  font-weight: 600;
+  color: var(--via-heading);
+  text-align: right;
+  min-width: 0;
+}
+.via-field .via-field__unit {
+  font-family: var(--via-mono);
+  font-size: 0.8rem;
+  color: var(--via-muted);
+}
+
+/* 레인지 슬라이더 */
+.form-range,
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 26px;
+  background: transparent;
+}
+.form-range::-webkit-slider-runnable-track,
+input[type='range']::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--via-bg);
+  box-shadow: var(--via-inset-sm);
+}
+.form-range::-moz-range-track,
+input[type='range']::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--via-bg);
+  box-shadow: var(--via-inset-sm);
+}
+.form-range::-webkit-slider-thumb,
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -6px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--via-bg);
+  box-shadow: var(--via-shadow-sm), inset 0 0 0 4px var(--via-primary);
+  cursor: pointer;
+}
+.form-range::-moz-range-thumb,
+input[type='range']::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--via-bg);
+  box-shadow: var(--via-shadow-sm), inset 0 0 0 4px var(--via-primary);
+  cursor: pointer;
+}
+.form-range:disabled::-webkit-slider-thumb { box-shadow: var(--via-inset-sm); opacity: 0.6; }
+.form-range:disabled::-moz-range-thumb { box-shadow: var(--via-inset-sm); opacity: 0.6; }
+
+/* 체크박스 */
+.form-check-input {
+  background-color: var(--via-bg);
+  border: 0;
+  box-shadow: var(--via-inset-sm);
+  width: 1.15em;
+  height: 1.15em;
+  margin-top: 0.15em;
+}
+.form-check-input:checked {
+  background-color: var(--via-primary);
+  box-shadow: var(--via-shadow-sm);
+}
+.form-check-label { font-weight: 600; font-size: 0.88rem; }
+
+/* ── 배지 / 값 표시 ───────────────────────────────────────────────────── */
+.badge {
+  font-family: var(--via-mono);
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.4em 0.85em;
+  background: var(--via-bg) !important;
+  color: var(--via-muted) !important;
+  box-shadow: var(--via-shadow-sm);
+}
+.badge.is-primary { color: var(--via-primary) !important; }
+.badge.is-warm { color: var(--via-warm-ink) !important; }
+
+.via-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--via-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: var(--via-muted);
+  background: var(--via-bg);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  box-shadow: var(--via-inset-sm);
+}
+
+/* 계측 수치 리드아웃 */
+.via-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.via-readout__k {
+  font-family: var(--via-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  color: var(--via-muted);
+}
+.via-readout__v {
+  font-family: var(--via-mono);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--via-heading);
+  font-variant-numeric: tabular-nums;
+}
+.via-readout__u { font-family: var(--via-mono); font-size: 0.7rem; color: var(--via-muted); }
+
+/* ── 캔버스 / 미터 / 진행률 ───────────────────────────────────────────── */
+.via-canvas-wrap {
+  background: var(--via-bg);
+  border-radius: var(--via-radius);
+  box-shadow: var(--via-inset);
+  padding: 0.85rem;
+}
+.via-canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  /* 캔버스는 고유 비율을 가지므로 CSS 높이를 명시해야 세로로 늘어나지 않는다. */
+  height: var(--via-canvas-h, 280px);
+  border-radius: var(--via-radius-sm);
+}
+
+/* ── R2R 저항기 타일(스크립트로 생성 → 전역 스타일이어야 한다) ──────────── */
+.via-resistor {
+  width: 78px;
+  height: 82px;
+  border-radius: var(--via-radius);
+  background: var(--via-bg);
+  box-shadow: var(--via-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1px;
+  cursor: pointer;
+  user-select: none;
+  color: var(--via-muted);
+  transition: box-shadow var(--via-ease), color var(--via-ease);
+}
+.via-resistor:hover { box-shadow: var(--via-shadow); }
+.via-resistor.is-on { box-shadow: var(--via-inset-sm); color: var(--via-primary); }
+.via-resistor.is-locked { cursor: not-allowed; }
+.via-resistor__bit {
+  font-family: var(--via-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+}
+.via-resistor__state {
+  font-family: var(--via-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.via-resistor__val {
+  font-family: var(--via-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.via-meter {
+  height: 16px;
+  border-radius: 999px;
+  background: var(--via-bg);
+  box-shadow: var(--via-inset-sm);
+  overflow: hidden;
+}
+.via-meter__bar {
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  /* 그라디언트는 트랙 전체에 고정하고 클립으로 잘라내야 색이 레벨 위치를 정확히 나타낸다. */
+  background: linear-gradient(90deg, var(--via-primary), #b08300 62%, var(--via-warm) 100%);
+  clip-path: inset(0 calc(100% - var(--level, 0%)) 0 0 round 999px);
+  transition: clip-path 0.1s ease-out;
+}
+
+.progress {
+  height: 10px;
+  background: var(--via-bg);
+  box-shadow: var(--via-inset-sm);
+  border-radius: 999px;
+}
+.progress-bar { background: var(--via-primary); border-radius: 999px; }
+
+/* ── 아코디언(native <details>) ───────────────────────────────────────── */
+.via-accordion {
+  background: var(--via-surface);
+  border-radius: var(--via-radius-lg);
+  box-shadow: var(--via-shadow-md);
+  overflow: hidden;
+}
+.via-accordion > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 1.05rem 1.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  color: var(--via-heading);
+  user-select: none;
+}
+.via-accordion > summary::-webkit-details-marker { display: none; }
+.via-accordion > summary::after {
+  content: '\F282'; /* bi-chevron-down */
+  font-family: 'bootstrap-icons';
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--via-muted);
+  transition: transform var(--via-ease);
+}
+.via-accordion[open] > summary::after { transform: rotate(180deg); }
+.via-accordion[open] > summary { color: var(--via-primary); }
+.via-accordion__body { padding: 0 1.35rem 1.35rem; }
+
+/* ── 다이얼로그(주의 안내) ────────────────────────────────────────────── */
+.via-dialog {
+  border: 0;
+  padding: 0;
+  max-width: min(520px, calc(100vw - 2rem));
+  border-radius: var(--via-radius-xl);
+  background: var(--via-bg);
+  color: var(--via-text);
+  box-shadow: var(--via-shadow-lg);
+}
+.via-dialog::backdrop {
+  background: rgba(52, 62, 76, 0.32);
+  backdrop-filter: blur(2px);
+}
+.via-dialog__body { padding: 1.75rem 1.75rem 1.5rem; }
+.via-dialog__icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--via-bg);
+  box-shadow: var(--via-shadow-sm);
+  color: var(--via-warm-ink);
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+.via-dialog h2 { font-size: 1.15rem; margin-bottom: 0.6rem; }
+.via-dialog p {
+  font-size: 0.88rem;
+  line-height: 1.8;
+  color: var(--via-muted);
+  margin-bottom: 1.35rem;
+}
+
+/* ── 랜딩 ─────────────────────────────────────────────────────────────── */
+.via-hero {
+  /* padding 단축은 .container 의 좌우 여백을 지워버리므로 세로만 지정한다. */
+  padding-block: clamp(3rem, 9vw, 6rem) clamp(2rem, 5vw, 3.5rem);
+}
+.via-hero__eyebrow {
+  font-family: var(--via-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.22em;
+  color: var(--via-muted);
+  margin-bottom: 1rem;
+}
+.via-hero h1 {
+  font-size: clamp(2.1rem, 6vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.via-hero p.lead {
+  color: var(--via-muted);
+  max-width: 46ch;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.75;
+}
+
+.via-card-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.6rem;
+  border-radius: var(--via-radius-xl);
+  background: var(--via-bg);
+  box-shadow: var(--via-shadow-md);
+  color: var(--via-text);
+  transition: box-shadow var(--via-ease), transform var(--via-ease);
+}
+.via-card-link:hover {
+  box-shadow: var(--via-shadow-lg);
+  transform: translateY(-3px);
+  color: var(--via-text);
+}
+.via-card-link:active { box-shadow: var(--via-inset-sm); transform: translateY(0); }
+.via-card-link__icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--via-bg);
+  box-shadow: var(--via-shadow-sm);
+  font-size: 1.4rem;
+  color: var(--via-primary);
+  margin-bottom: 1.1rem;
+}
+.via-card-link__icon.is-warm { color: var(--via-warm-ink); }
+.via-card-link h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.via-card-link p {
+  font-size: 0.88rem;
+  color: var(--via-muted);
+  line-height: 1.7;
+  margin-bottom: 1.1rem;
+}
+.via-card-link__foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.via-card-link__go {
+  font-family: var(--via-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  color: var(--via-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ── 푸터 ─────────────────────────────────────────────────────────────── */
+.via-foot {
+  padding-block: 2.5rem 3rem;
+  font-family: var(--via-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--via-muted);
+}
+
+/* ── 페이지 헤더(하위 페이지 공통) ────────────────────────────────────── */
+.via-page-head {
+  padding-block: 2.25rem 1.5rem;
+}
+.via-page-head h1 {
+  font-size: clamp(1.6rem, 4vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
+.via-page-head p {
+  color: var(--via-muted);
+  font-size: 0.92rem;
+  margin: 0;
+  max-width: 62ch;
+  line-height: 1.7;
+}
+
+@media (max-width: 640px) {
+  :root { --via-nav-h: 60px; }
+  .via-seg { width: 100%; justify-content: center; }
+  .via-seg .btn { font-size: 0.72rem; padding: 0.45rem 0.55rem; }
+  .via-resistor { width: 68px; height: 74px; }
+  .via-brand__sub { display: none !important; }
+  .via-navlink { padding: 0.45rem 0.7rem; font-size: 0.78rem; }
+  .via-navlink span.via-navlink__label { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

@@ -1,0 +1,34 @@
+---
+interface Props {
+  /** 현재 경로 (예: "/spatial") — 활성 링크 표시에 사용 */
+  active?: string;
+}
+
+const { active = '/' } = Astro.props;
+
+const links = [
+  { href: '/spatial/', key: '/spatial', label: '공간 음향', icon: 'bi-badge-3d' },
+  { href: '/response/', key: '/response', label: '주파수 응답', icon: 'bi-graph-up' },
+  { href: '/r2r/', key: '/r2r', label: 'R2R DAC', icon: 'bi-motherboard' },
+];
+---
+
+<nav class="via-nav">
+  <div class="container via-nav__inner">
+    <a class="via-brand" href="/">
+      <span class="via-brand__mark"><i class="bi bi-soundwave"></i></span>
+      <span>
+        Web Audio API
+        <span class="via-brand__sub">VIA · AUDIO LAB</span>
+      </span>
+    </a>
+    {
+      links.map((l) => (
+        <a class:list={['via-navlink', { 'is-active': active === l.key }]} href={l.href}>
+          <i class={`bi ${l.icon}`}></i>
+          <span class="via-navlink__label">{l.label}</span>
+        </a>
+      ))
+    }
+  </div>
+</nav>
