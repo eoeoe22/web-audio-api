@@ -13,7 +13,7 @@ import Base from '../layouts/Base.astro';
 
   <!-- 좌상단: 계측 리드아웃 -->
   <div class="via-hud" id="hud">
-    <div class="via-hud__title">SPATIAL METERING</div>
+    <div class="via-hud__title">SPATIAL METERING<span id="hud-src"></span></div>
     <div class="via-readout">
       <span class="via-readout__k">DISTANCE</span>
       <span class="via-readout__v" id="v-dist">—</span>
@@ -29,7 +29,18 @@ import Base from '../layouts/Base.astro';
       <span class="via-readout__v" id="v-az">—</span>
       <span class="via-readout__u">°</span>
     </div>
+    <div class="via-readout">
+      <span class="via-readout__k">ELEVATION</span>
+      <span class="via-readout__v" id="v-el">—</span>
+      <span class="via-readout__u">°</span>
+    </div>
   </div>
+
+  <!-- 선택한 오브젝트의 높이 배지 (수직 이동 화살표 위) -->
+  <div id="lift-badge" class="via-lift-badge"></div>
+
+  <!-- FPV 조준점 -->
+  <div id="crosshair" class="via-crosshair"></div>
 
   <!-- 우하단: 신호 제어 패널 -->
   <div class="via-scene-panel" id="panel">
@@ -62,11 +73,25 @@ import Base from '../layouts/Base.astro';
     </div>
     <input type="range" class="form-range" id="headrot" min="-180" max="180" value="0" step="1" />
 
+    <div class="via-mode-row">
+      <button id="stereo" class="btn btn-primary" type="button" aria-pressed="false" title="음원의 좌/우 채널을 두 스피커로 분리">
+        <i class="bi bi-speaker"></i> 스테레오
+      </button>
+      <button id="fpv" class="btn btn-primary" type="button" aria-pressed="false" title="청취자 시점 1인칭 카메라">
+        <i class="bi bi-person-bounding-box"></i> FPV
+      </button>
+      <button id="reset" class="btn btn-primary" type="button" title="스피커·청취자 배치와 시점을 기본값으로">
+        <i class="bi bi-arrow-counterclockwise"></i> 초기화
+      </button>
+    </div>
+
     <div class="via-scene-panel__hint">
       <span><i class="bi bi-circle-fill" style="color:var(--via-warm)"></i> 스피커 · <i
           class="bi bi-circle-fill"
           style="color:var(--via-primary)"></i> 청취자 — 드래그로 이동</span>
+      <span>클릭 = 선택 → <i class="bi bi-arrow-down-up" style="color:#8a6100"></i> 화살표를 잡고 위아래로 높이 조절 (빈 곳 클릭 = 해제)</span>
       <span>빈 곳 드래그 = 시점 회전 · 휠 = 확대/축소</span>
+      <span class="via-hint-desktop">FPV: 드래그 = 시선 · WASD/방향키 = 이동 · Q·E = 높이 · Esc = 해제</span>
       <span class="text-warm"><i class="bi bi-headphones"></i> 입체음향은 헤드폰에서 확인하세요</span>
     </div>
   </div>
@@ -81,6 +106,10 @@ import Base from '../layouts/Base.astro';
   }
   .via-scene.is-dragging {
     cursor: grabbing;
+  }
+  .via-scene.is-fpv,
+  .via-scene.is-fpv.is-dragging {
+    cursor: crosshair;
   }
   .via-scene :global(canvas) {
     display: block;
@@ -112,6 +141,47 @@ import Base from '../layouts/Base.astro';
   .via-hud .via-readout__v {
     min-width: 84px;
   }
+  #hud-src {
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  /* 수직 이동 화살표 옆에 뜨는 높이 배지 */
+  .via-lift-badge {
+    position: absolute;
+    display: none;
+    transform: translate(-50%, -100%);
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--via-radius-sm);
+    background: var(--via-bg);
+    box-shadow: var(--via-shadow-sm);
+    font-family: var(--via-mono);
+    font-size: 0.72rem;
+    color: var(--via-amber-ink);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  /* FPV 조준점 */
+  .via-crosshair {
+    position: absolute;
+    display: none;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(69, 73, 79, 0.45);
+    pointer-events: none;
+  }
+  .via-crosshair::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: rgba(69, 73, 79, 0.45);
+  }
 
   .via-scene-panel {
     position: absolute;
@@ -128,6 +198,22 @@ import Base from '../layouts/Base.astro';
     padding: 0.6rem 0.4rem;
     white-space: nowrap;
   }
+  .via-mode-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+  }
+  .via-mode-row .btn {
+    font-size: 0.72rem;
+    padding: 0.5rem 0.2rem;
+  }
+  .via-mode-row .btn i {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 0.1rem;
+  }
+
   .via-scene-panel__hint {
     display: flex;
     flex-direction: column;
@@ -214,6 +300,18 @@ import Base from '../layouts/Base.astro';
       margin-top: 0.8rem;
       padding-top: 0.7rem;
       font-size: 0.64rem;
+    }
+    .via-mode-row {
+      margin-top: 0.7rem;
+    }
+    /* 터치 기기에는 키보드 조작 안내가 필요 없다 */
+    .via-hint-desktop {
+      display: none;
+    }
+    .via-mode-row .btn i {
+      display: inline;
+      font-size: 0.72rem;
+      margin-bottom: 0;
     }
     .via-dropzone {
       padding: 0.55rem 0.7rem;
